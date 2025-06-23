@@ -100,16 +100,20 @@ struct ContentView: View {
     private func cardMatch() {
         guard faceUpCards.count == 2 else {return}
         var updateCards = cards
-        var card1Index = faceUpCards[0]
-        var card2Index = faceUpCards[1]
+        let card1Index = faceUpCards[0]
+        let card2Index = faceUpCards[1]
         
         // Cards matched
         if cards[card1Index].content == cards[card2Index].content {
             updateCards[card1Index].isMatched = true
             updateCards[card2Index].isMatched = true
         } else {
-            updateCards[card1Index].isFaceUp = false
-            updateCards[card2Index].isFaceUp = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        var delayUpdate = cards
+                        delayUpdate[card1Index].isFaceUp = false
+                        delayUpdate[card2Index].isFaceUp = false
+                        self.cards = delayUpdate
+            }
         }
         cards = updateCards
         faceUpCards.removeAll()
@@ -144,17 +148,17 @@ struct CardView: View {
     let card: Card
     let themeColor: Color
     var body: some View {
-        ZStack(content: {
-            let base: RoundedRectangle = RoundedRectangle(cornerRadius: 12)
+        ZStack {
+            var base: RoundedRectangle = RoundedRectangle(cornerRadius: 12)
+                base.fill(card.isFaceUp ? Color.white : themeColor)
+                .shadow(radius: 3)
             if card.isFaceUp {
-                base.fill(.white)
-                base.strokeBorder(themeColor, lineWidth: 3)
-            } else if card.isMatched {
-                base.opacity(0)
-            } else {
-                base.fill(themeColor)
+                Text(card.content)
+                    .font(.largeTitle)
+                    .padding()
+                base.strokeBorder(card.isMatched ? .green : themeColor, lineWidth: 3)
             }
-        })
+        }
         .aspectRatio(2/3, contentMode: .fit)
     }
 }
